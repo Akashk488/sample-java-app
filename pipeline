@@ -1,1 +1,27 @@
-p
+pipeline{
+    agent {label 'jenkins_slave'}
+    tools {
+        maven 'maven_test'
+    }
+    stages{
+        stage ('checkout_scm'){
+            steps {
+                checkout scm
+            }
+        }
+
+        stage ('maven_build'){
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+
+        stage ('tomcat_build'){
+            steps {
+                sshagent (['tomcat_server']){
+                    sh 'scp -o StrictHostKeyChecking=no target/spring-boot-starter-parent.war ec2-user@3.110.186.168:/opt/tomcat9/webapps'
+                }
+            }
+        }
+    }
+}
